@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .image-and-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <img src="/static/logo1.jpg" alt="TumorAI Logo" class="logo">
+    <div class="container">
+        <h2>Welcome, {{ fullname }}</h2> 
+        <p> Previous session progress: {{ progress }} out of {{total}} questions</p>
+        <button id="prevBtn" onclick="loadPrev()" class="styled-button">Load Previous Item</button>
+        <button id="nextBtn" onclick="loadNext()" class="styled-button">Load Next Item</button>
+        <div id="content" class="image-and-content">
+            <img id="image" src="" alt="Press Load button and Images with questions will appear" width="800">
+            <div>
+                <p id="progress-display"></p>
+                <p id="question"></p>
+                <form id="options"></form>
+                <button id="submitBtn" onclick="submitAnswer()" class="styled-button">Submit Answer</button>
+                <button id="changeAnswerBtn" onclick="changeAnswer()" class="styled-button">Change Answer</button>
+            </div>
+        </div>
+        <br>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <script>
+        let currentProgress = {{ progress }};
+        const totalQuestions = {{ total }};
+        let currentImageName = "";
+        let answeredQuestions = new Set();
+        
+        function loadAnsweredQuestions() {
+            fetch("/api/get_answered_questions")
+                .then(res => res.json())
+                .then(data => {
+                    answeredQuestions = new Set(data.answered);
+                    loadQuestion(currentProgress);
+                    updateNavigationButtonStates();
+                });
+        }
+        
+        function updateNavigationButtonStates() {
+            document.getElementById("prevBtn").disabled = (currentProgress <= 0);
+            document.getElementById("nextBtn").disabled = (currentProgress >= totalQuestions - 1);
+        }
+
+        function loadQuestion(progress) {
+            if (progress >= totalQuestions) {
+                document.getElementById("content").innerHTML = '<h2>Thank you! You have answered all questions!</h2>';
+                return;
+            }
+            
+            updateNavigationButtonStates();
+            
+            fetch(`/api/get_item/${progress}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("progress-display").innerText = `You are answering: ${data.progress + 1} out of ${totalQuestions}`;
+                    document.getElementById("image").src = data.image;
+                    document.getElementById("question").innerText = data.question;
+                    currentImageName = data.image.split('/').pop();
+                    
+                    const optionsForm = document.getElementById("options");
+                    optionsForm.innerHTML = '';
+                    data.options.forEach(option => {
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="radio" name="answer" value="${option}"> ${option}`;
+                        optionsForm.appendChild(label);
+                        //optionsForm.appendChild(document.createElement('br'));
+                    });
+                    
+                    if (answeredQuestions.has(currentImageName)) {
+                        fetch(`/api/get_user_answer/${currentImageName}`)
+                            .then(res => res.json())
+                            .then(answerData => {
+                                if (answerData.answer) {
+                                    const radio = document.querySelector(`input[name="answer"][value="${answerData.answer}"]`);
+                                    if (radio) {
+                                        radio.checked = true;
+                                    }
+                                }
+                                
+                                document.getElementById("options").disabled = true;
+                                document.getElementById("submitBtn").style.display = 'none';
+                                document.getElementById("changeAnswerBtn").style.display = 'block';
+                            });
+                    } else {
+                        document.getElementById("options").disabled = false;
+                        document.getElementById("submitBtn").style.display = 'block';
+                        document.getElementById("changeAnswerBtn").style.display = 'none';
+                        document.getElementById("submitBtn").disabled = false;
+                    }
+                });
+        }
+        
+        function loadNext() {
+             if (currentProgress < totalQuestions) {
+                currentProgress++;
+                loadQuestion(currentProgress);
+            }
+        }
+
+        function loadPrev() {
+            if (currentProgress > 0) {
+                currentProgress--;
+                loadQuestion(currentProgress);
+            }
+        }
+
+        function submitAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('Please select an answer.');
+                return;
+            }
+
+            const answer = selected.value;
+
+            fetch("/api/submit_answer", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    answer: answer,
+                    image_name: currentImageName
+                })
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.status === "success") {
+                      answeredQuestions.add(currentImageName);
+                      loadNext();
+                  } else {
+                      alert("Error submitting answer.");
+                  }
+              });
+        }
+
+        function changeAnswer() {
+            document.getElementById("options").disabled = false;
+            document.getElementById("changeAnswerBtn").style.display = 'none';
+            document.getElementById("submitBtn").style.display = 'block';
+            document.getElementById("submitBtn").innerText = "Update Answer";
+            document.getElementById("submitBtn").onclick = updateAnswer;
+        }
+
+        function updateAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('Please select a new answer.');
+                return;
+            }
+            const newAnswer = selected.value;
+            
+            fetch("/api/change_answer", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    image_name: currentImageName,
+                    new_answer: newAnswer
+                })
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.status === "success") {
+                      alert("Answer updated successfully!");
+                      document.getElementById("options").disabled = true;
+                      document.getElementById("submitBtn").style.display = 'none';
+                      document.getElementById("changeAnswerBtn").style.display = 'block';
+                      document.getElementById("submitBtn").innerText = "Submit Answer";
+                      document.getElementById("submitBtn").onclick = submitAnswer;
+                  } else {
+                      alert("Error updating answer.");
+                  }
+              });
+        }
+        
+        loadAnsweredQuestions();
+    </script>
+</body>
+</html>

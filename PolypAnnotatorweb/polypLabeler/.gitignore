@@ -1,0 +1,4 @@
+web_app/**/*.csv
+web_app/**/*.jpeg
+web_app/**/*.jpg
+web_app/**/*.db

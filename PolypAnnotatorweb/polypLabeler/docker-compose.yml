@@ -1,0 +1,16 @@
+#version: "1"
+
+services:
+  polyplabler:
+         build: .
+         image: polyplabweb
+         container_name: polyplabweb
+         privileged: true
+         ports:
+              - "7700:7700"
+         expose:
+              - "7700"
+         volumes:
+              - /data/endoscopy/polypLabeler:/home/polyplab
+         restart: always
+         entrypoint: ["/bin/bash","-c","cd /home/polyplab/web_app/ && python3 app.py"]

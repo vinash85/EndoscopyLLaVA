@@ -1,0 +1,68 @@
+/* General body styles for the background image */
+body {
+    background-image: url('/static/background.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    color: #ffffff; /* For better text visibility */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container for the logo and form content */
+.container {
+    background-color:rgba(0, 0, 0, 0.5); /* A semi-transparent black background */
+    border-radius: 10px;
+    padding: 20px;
+    margin: 50px auto; /* Centers the container on the page */
+    max-width: 500px;
+    text-align: center;
+}
+
+/* Styles for the logo image */
+.logo {
+    max-width: 150px;
+    margin-bottom: 20px;
+}
+
+/* Styles to make form elements look better */
+form label, form input, form button {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+form button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 30px 35px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+}
+
+form button:hover {
+    opacity: 0.8;
+}
+
+a {
+    color: #4CAF50;
+}
+
+/* Styles for the radio button options */
+form label {
+    font-size: 1.5em; /* Add this line to make the prompt text bigger */
+}
+
+form input {
+    font-size: 1.5em; /* Add this line to make the input fields bigger */
+}
+
+/* Added style to prevent list items from wrapping */
+.flashes li {
+    white-space: nowrap;
+}
+
+

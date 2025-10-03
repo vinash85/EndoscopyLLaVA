@@ -1,0 +1,53 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Find Username</title>
+</head>
+<body>
+    <h2>Find Username</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('find_username') }}">
+        <label>Full Name:</label><br>
+        <input type="text" name="fullname" required><br><br>
+        <button type="submit">Find Username</button>
+    </form>
+    <p>Remember your username? <a href="{{ url_for('login') }}">Login</a></p>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Username</title>
+    <link rel="stylesheet" href="/static/styles_login.css">
+</head>
+<body>
+    
+    <div class="container">
+        <img src="/static/Logo_TumorAI.jpg" alt="TumorAI Logo" class="logo">
+        <h2>Find Username</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <ul class=flashes>
+            {% for category, message in messages %}
+              <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('find_username') }}">
+            <label>Full Name:</label><br>
+            <input type="text" name="fullname" required><br><br>
+            <button type="submit">Find Username</button>
+        </form>
+        <p>Remember your username? <a href="{{ url_for('login') }}">Login</a></p>
+    </div>
+</body>
+</html>

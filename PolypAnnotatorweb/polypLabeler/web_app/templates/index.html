@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image MCQ App</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        img { max-width: 100%; height: 100%; margin-bottom: 20px; }
+        .option { margin: 10px 0; }
+        #submitBtn { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Image-based Multiple Choice Quiz</h1>
+    <div id="quiz-container">
+        <img id="image" src="" alt="Question image">
+        <h3 id="question"></h3>
+        <form id="options"></form>
+        <button id="submitBtn" onclick="submitAnswer()">Submit</button>
+    </div>
+    <script>
+        let currentIndex = 0;
+        let total = 0;
+        let currentImage = "";
+
+        function loadQuestion(index) {
+            fetch(`/get_question/${index}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('quiz-container').innerHTML = '<h2>Quiz complete!</h2>';
+                        return;
+                    }
+                    currentImage = data.image;
+                    document.getElementById('image').src = `/static/images/${data.image}`;
+                    document.getElementById('question').textContent = data.question;
+                    const optionsForm = document.getElementById('options');
+                    optionsForm.innerHTML = '';
+                    data.options.forEach(option => {
+                        const label = document.createElement('label');
+                        label.classList.add('option');
+                        label.innerHTML = `<input type="radio" name="answer" value="${option}"> ${option}`;
+                        optionsForm.appendChild(label);
+                    });
+                });
+        }
+
+        function submitAnswer() {
+            const selected = document.querySelector('input[name="answer"]:checked');
+            if (!selected) {
+                alert('Please select an answer.');
+                return;
+            }
+            fetch('/submit_answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: currentImage, answer: selected.value })
+            }).then(() => {
+                currentIndex++;
+                loadQuestion(currentIndex);
+            });
+        }
+
+        // Initial load
+        loadQuestion(currentIndex);
+    </script>
+</body>
+</html>
